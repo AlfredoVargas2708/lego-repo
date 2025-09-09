@@ -1,0 +1,202 @@
+<div class="container">
+  <div class="header">
+    <h1>{{ "piezas de lego" | titlecase }}</h1>
+    <div class="filters">
+      <p-select
+        [options]="columns"
+        [(ngModel)]="selectedColumn"
+        placeholder="Filtrar Por..."
+        optionLabel="label"
+        optionValue="value"
+        style="text-transform: capitalize"
+        scrollHeight="300px"
+        (onChange)="autoFocus = true"
+      />
+      <p-autocomplete
+        [(ngModel)]="searchValue"
+        [suggestions]="searchOptions"
+        (completeMethod)="getSearchOptions(searchValue)"
+        (onSelect)="getLegosByFilter()"
+        [showClear]="true"
+        [autofocus]="autoFocus"
+      />
+    </div>
+    <p-button
+      type="button"
+      label="Agregar"
+      icon="pi pi-plus"
+      severity="success"
+      (click)="drawerVisible = true"
+    ></p-button>
+  </div>
+  <div class="content">
+    <p-table
+      showGridlines
+      stripedRows
+      [value]="legos"
+      [lazy]="true"
+      [loading]="loading"
+      [rows]="limit"
+      [first]="first"
+      [paginator]="true"
+      [rowsPerPageOptions]="[6, 12, 18]"
+      [pageLinks]="6"
+      [totalRecords]="totalRecords"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
+      (onLazyLoad)="pageChange($event)"
+      [scrollable]="true"
+      scrollHeight="500px"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 20%">{{ "imagen lego" | titlecase }}</th>
+          <th style="width: 5%">{{ "lego" | titlecase }}</th>
+          <th style="width: 10%">{{ "imagen pieza" | titlecase }}</th>
+          <th style="width: 5%">{{ "pieza" | titlecase }}</th>
+          <th style="width: 5%">{{ "cantidad" | titlecase }}</th>
+          <th style="width: 10%">{{ "set" | titlecase }}</th>
+          <th style="width: 5%">{{ "esta pedido" | titlecase }}</th>
+          <th style="width: 5%">{{ "esta completo" | titlecase }}</th>
+          <th style="width: 5%">{{ "esta reemplazado" | titlecase }}</th>
+          <th style="width: 10%">{{ "acciones" | titlecase }}</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-lego>
+        <tr>
+          <td class="image-lego">
+            <img [src]="lego.image_lego" alt="" />
+          </td>
+          <td>{{ lego.lego }}</td>
+          <td class="image-pieza">
+            <img [src]="lego.image_pieza" alt="" />
+          </td>
+          <td>{{ lego.pieza }}</td>
+          <td>{{ lego.cantidad }}</td>
+          <td>{{ lego.set }}</td>
+          <td>{{ lego.esta_pedido }}</td>
+          <td>{{ lego.esta_completo }}</td>
+          <td>{{ lego.esta_reemplazado }}</td>
+          <td>
+            <div class="buttons">
+              <p-button
+                type="button"
+                label="Editar"
+                icon="pi pi-pencil"
+                severity="success"
+                (click)="onEditLego(lego)"
+              ></p-button>
+              <p-button
+                type="button"
+                label="Eliminar"
+                icon="pi pi-trash"
+                severity="danger"
+                (click)="confirm2($event, lego.id)"
+              ></p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+    <p-toast />
+    <p-confirmdialog position="topright"/>
+    <p-drawer
+      header="{{ isEdit ? 'Editar' : 'Agregar' }}"
+      [(visible)]="drawerVisible"
+      position="right"
+      [style]="{ width: '30%' }"
+    >
+      <form [formGroup]="legoForm" (ngSubmit)="onSubmit()" class="form">
+        <div class="inputs">
+          <div>
+            <p-iftaLabel>
+              <p-autocomplete
+                formControlName="lego"
+                [suggestions]="searchOptionsByColumn"
+                (completeMethod)="getSearchOptionsByColumn('lego', legoForm.get('lego')?.value)"
+                fluid
+                [showClear]="true"
+              />
+              <label for="lego">Lego</label>
+            </p-iftaLabel>
+          </div>
+          <div>
+            <p-iftaLabel>
+              <p-autocomplete
+                formControlName="pieza"
+                [suggestions]="searchOptionsByColumn"
+                (completeMethod)="getSearchOptionsByColumn('pieza', legoForm.get('pieza')?.value)"
+                fluid
+                [showClear]="true"
+              />
+              <label for="pieza">Pieza</label>
+            </p-iftaLabel>
+          </div>
+          <div>
+            <p-iftaLabel>
+              <p-autocomplete
+                formControlName="cantidad"
+                [suggestions]="searchOptionsByColumn"
+                (completeMethod)="getSearchOptionsByColumn('cantidad', legoForm.get('cantidad')?.value)"
+                fluid
+                [showClear]="true"
+              />
+              <label for="cantidad">Cantidad</label>
+            </p-iftaLabel>
+          </div>
+          <div>
+            <p-iftaLabel>
+              <p-autocomplete
+                formControlName="set"
+                [suggestions]="searchOptionsByColumn"
+                (completeMethod)="getSearchOptionsByColumn('set', legoForm.get('set')?.value)"
+                fluid
+                [showClear]="true"
+              />
+              <label for="set">Set</label>
+            </p-iftaLabel>
+          </div>
+          <div>
+            <p-iftaLabel>
+              <p-autocomplete
+                formControlName="esta_pedido"
+                [suggestions]="searchOptionsByColumn"
+                (completeMethod)="getSearchOptionsByColumn('esta_pedido', legoForm.get('esta_pedido')?.value)"
+                fluid
+                [showClear]="true"
+              />
+              <label for="esta_pedido">Esta Pedido</label>
+            </p-iftaLabel>
+          </div>
+          <div>
+            <p-iftaLabel>
+              <p-autocomplete
+                formControlName="esta_completo"
+                [suggestions]="searchOptionsByColumn"
+                (completeMethod)="getSearchOptionsByColumn('esta_completo', legoForm.get('esta_completo')?.value)"
+                fluid
+                [showClear]="true"
+              />
+              <label for="esta_completo">Esta Completo</label>
+            </p-iftaLabel>
+          </div>
+          <div>
+            <p-iftaLabel>
+              <p-autocomplete
+                formControlName="esta_reemplazado"
+                [suggestions]="searchOptionsByColumn"
+                (completeMethod)="getSearchOptionsByColumn('esta_reemplazado', legoForm.get('esta_reemplazado')?.value)"
+                fluid
+                [showClear]="true"
+              />
+              <label for="esta_reemplazado">Esta Reemplazado</label>
+            </p-iftaLabel>
+          </div>
+        </div>
+        <button pButton severity="secondary" type="submit">
+          <span pButtonLabel>Submit</span>
+        </button>
+      </form>
+    </p-drawer>
+  </div>
+</div>

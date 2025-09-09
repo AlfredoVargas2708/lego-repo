@@ -14,28 +14,97 @@ const getColumns = async (req, res) => {
 const getAll = async (req, res) => {
   try {
     let { page, limit } = req.query;
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 6;
+
     let offset = (page - 1) * limit;
 
     let legos = await legoService.getAll(offset, limit);
 
     let legoCodes = legos.rows.reduce((acc, value) => {
-      if(!acc[value.lego]) {
+      if (!acc[value.lego]) {
         acc[value.lego] = value.lego;
       }
       return acc;
     }, {});
 
     let pieceCodes = legos.rows.reduce((acc, value) => {
-      if(!acc[value.pieza]) {
+      if (!acc[value.pieza]) {
         acc[value.pieza] = value.pieza;
       }
       return acc;
     }, {});
-    
-    let images = await getImages(Object.values(legoCodes), Object.values(pieceCodes));
-    res.status(200).send({ legos: legos.rows, images });
+
+    let images = await getImages(
+      Object.values(legoCodes),
+      Object.values(pieceCodes)
+    );
+    res.status(200).send({ legos: legos.rows, images, count: legos.count });
   } catch (error) {
     console.log(error);
+    res.status(500).send({ error: error.message });
+  }
+};
+
+const getSearchOptions = async (req, res) => {
+  try {
+    let { column } = req.query;
+
+    let options = await legoService.getSearchOptions(column);
+    res.status(200).send(
+      options
+        .filter((option) => option[column])
+        .map((option) => option[column])
+        .filter((option) =>
+          option
+            .toString()
+            .toLowerCase()
+            .includes(req.query.value.toLowerCase())
+        )
+    );
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ error: error.message });
+  }
+};
+
+const getLegosByFilter = async (req, res) => {
+  try {
+    let { column, value, page, limit } = req.query;
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 6;
+
+    let offset = (page - 1) * limit;
+
+    let legos = await legoService.getLegosByFilter(
+      column,
+      value,
+      offset,
+      limit
+    );
+
+    let legoCodes = legos.rows.reduce((acc, value) => {
+      if (!acc[value.lego]) {
+        acc[value.lego] = value.lego;
+      }
+      return acc;
+    }, {});
+
+    let pieceCodes = legos.rows.reduce((acc, value) => {
+      if (!acc[value.pieza]) {
+        acc[value.pieza] = value.pieza;
+      }
+      return acc;
+    }, {});
+
+    let images = await getImages(
+      Object.values(legoCodes),
+      Object.values(pieceCodes)
+    );
+
+    res.status(200).send({ legos: legos.rows, count: legos.count, images });
+  } catch (error) {
+    console.error(error);
     res.status(500).send({ error: error.message });
   }
 };
@@ -43,18 +112,16 @@ const getAll = async (req, res) => {
 const editLego = async (req, res) => {
   try {
     let lego = req.body;
+    let { id } = req.params;
 
-    let { id, ...fields } = lego;
-
-    await legoService.editLego(fields, id);
+    await legoService.editLego(lego, id);
     let images = await getImages([lego.lego], [lego.pieza]);
     res.status(200).send({ lego, images });
-    
   } catch (error) {
     console.error(error);
     res.status(500).send({ error: error.message });
   }
-}
+};
 
 const addLego = async (req, res) => {
   try {
@@ -66,7 +133,7 @@ const addLego = async (req, res) => {
     console.error(error);
     res.status(500).send({ error: error.message });
   }
-}
+};
 
 const deleteLego = async (req, res) => {
   try {
@@ -77,12 +144,14 @@ const deleteLego = async (req, res) => {
     console.error(error);
     res.status(500).send({ error: error.message });
   }
-}
+};
 
 module.exports = {
   getColumns,
   getAll,
   editLego,
   addLego,
-  deleteLego
+  deleteLego,
+  getSearchOptions,
+  getLegosByFilter,
 };
