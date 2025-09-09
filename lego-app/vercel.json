@@ -1,0 +1,10 @@
+{
+    "buildCommand": "ng build --prod",
+    "outputDirectory": "dist/lego-app",
+    "rewrites": [
+      {
+        "source": "/(.*)",
+        "destination": "/index.html"
+      }
+    ]
+  }
