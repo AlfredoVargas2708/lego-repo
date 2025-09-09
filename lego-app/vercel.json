@@ -1,10 +1,16 @@
 {
-    "buildCommand": "ng build",
-    "outputDirectory": "dist/lego-app",
-    "rewrites": [
+    "version": 2,
+    "builds": [
       {
-        "source": "/(.*)",
-        "destination": "/index.html"
+        "src": "dist/lego-app/browser/**",
+        "use": "@vercel/static"
+      }
+    ],
+    "routes": [
+      {
+        "src": "/(.*)",
+        "dest": "dist/lego-app/browser/index.html"
       }
     ]
   }
+  
