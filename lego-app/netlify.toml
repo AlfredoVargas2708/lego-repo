@@ -1,4 +1,0 @@
-[build]
-  base = "lego-app"
-  command = "npm run build"
-  publish = "dist/lego-app/browser"
