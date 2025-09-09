@@ -1,35 +1,17 @@
-const { sequelize } = require("../sequelize/connection");
 const { Lego } = require("../sequelize/lego.model");
 
-const getAll = async () => {
-  return await Lego.findAll({
+const getAll = async (offset, limit) => {
+  return await Lego.findAndCountAll({
     order: [["id", "ASC"]],
+    raw: true,
+    offset,
+    limit
   });
 };
 
 const getColumns = async () => {
   return await Lego.describe();
 };
-
-const getFilterOptions = async (column) => {
-  return await Lego.findAll({
-    attributes: [[sequelize.fn("DISTINCT", sequelize.col(column)), column]],
-    order: [[column, "ASC"]],
-    raw: true,
-  });
-};
-
-const getLegosByValue = async (column, value, limit, offset) => {
-  return await Lego.findAndCountAll({
-    where: {
-      [column]: value,
-    },
-    order: [["id", "ASC"]],
-    limit,
-    offset,
-    raw: true
-  })
-}
 
 const editLego = async (lego, id) => {
   await Lego.update(lego, {
@@ -54,8 +36,6 @@ const deleteLego = async (id) => {
 module.exports = {
   getAll,
   getColumns,
-  getFilterOptions,
-  getLegosByValue,
   editLego,
   addLego,
   deleteLego

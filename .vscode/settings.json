@@ -3,5 +3,6 @@
         "angular-*": {
             "style": "scss"
         }
-    }
+    },
+    "git.ignoreLimitWarning": true
 }
