@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # Backend API Server
+  lego-server:
+    build:
+      context: ./lego-server
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - lego-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend Angular App
+  lego-app:
+    build:
+      context: ./lego-app
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      lego-server:
+        condition: service_healthy
+    networks:
+      - lego-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:4000', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  lego-network:
+    driver: bridge
+
+# Optional: Add volumes for development
+# Uncomment the following lines if you want to enable hot reloading for development
+# volumes:
+#   lego-app-dev:
+#     driver: local
+#   lego-server-dev:
+#     driver: local

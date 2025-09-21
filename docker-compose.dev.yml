@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # Backend API Server - Development
+  lego-server-dev:
+    build:
+      context: ./lego-server
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./lego-server:/app
+      - /app/node_modules
+    networks:
+      - lego-network
+    restart: unless-stopped
+    command: npm run dev
+
+  # Frontend Angular App - Development
+  lego-app-dev:
+    build:
+      context: ./lego-app
+      dockerfile: Dockerfile.dev
+    ports:
+      - "4200:4200"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./lego-app:/app
+      - /app/node_modules
+    networks:
+      - lego-network
+    restart: unless-stopped
+    command: npm start
+
+networks:
+  lego-network:
+    driver: bridge
